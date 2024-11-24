@@ -1,9 +1,9 @@
 # Using `OneOf` With **Blazor**
 > 27th April 2024
 
-Union types form an important part of modern languages like Rust and TypeScript. However, C# still lacks such a feature ([not]() for [want]() of [trying]() though). A critical part of the functional toolkit, unions are great for writing concise and expressive code. 
+Union types form an important part of modern languages like Rust and TypeScript. However, C# still lacks such a feature ([not](https://github.com/dotnet/csharplang/issues/113) for [want](https://github.com/dotnet/csharplang/issues/7016) of [trying](https://github.com/dotnet/csharplang/issues/7544) though). A critical part of the functional toolkit, unions are great for writing concise and expressive code. 
 
-Over time, a few .NET libraries have popped up to address the lack of unions in C#. Some modern ones [even use source generators](dunet). In this article I am going to talk about a much older library: [OneOf]().
+Over time, a few .NET libraries have popped up to address the lack of unions in C#. Some modern ones [even use source generators](https://github.com/domn1995/dunet). In this article I am going to talk about a much older library: [OneOf](https://github.com/mcintyre321/OneOf).
 
 ## OneOf
 
@@ -21,9 +21,6 @@ OneOf<Circle, Rectangle> value = new Rectangle(3, 4);
 The real utility is using these as return types. Consider the following interface:
 
 ```csharp
-record Circle(int Radius);   
-record Rectangle(int Width, int Height);      
-
 interface IIconService   
 {   
     OneOf<Circle, Rectangle> GetShape();
@@ -33,8 +30,6 @@ interface IIconService
 We do not care what `GetShape` does, only that it can return a `Circle` or `Rectangle`. In this hypothetical scenario, we only need the diameter of the shape, so we use `Match` to map the different types to a single value.
 
 ```csharp
-... continued      
-
 IIconService iconService = new IconService();      
 
 var diameter = iconService.GetShape().Map(
@@ -49,7 +44,7 @@ Note the effect of adding another type of shape to the union returned from `GetS
 
 There are multiple ways to use `OneOf` unions with Blazor. One of the best ways to use them is as a parameter type.
 
-This would be the regular pattern for a component with branching behaviour:
+This would be the regular pattern for a component with branching behavior:
 
 ```razor
 # Home.razor      

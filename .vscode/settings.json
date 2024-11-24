@@ -1,6 +1,11 @@
 {
+    "rust-analyzer.check.allTargets": false,
+    "rust-analyzer.cargo.target": "wasm32-unknown-unknown",
     "cSpell.words": [
+        "chrono",
         "codefence",
+        "comrak",
+        "reqwest",
         "Syntect"
     ]
 }

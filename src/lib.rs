@@ -1,17 +1,13 @@
-use comrak::{
-    markdown_to_html, markdown_to_html_with_plugins, plugins::syntect::SyntectAdapter, Options,
-    Plugins,
-};
+use std::time::{SystemTime, UNIX_EPOCH};
+
+use chrono::Timelike;
+use comrak::{markdown_to_html_with_plugins, Options, Plugins};
 use reqwest::Client;
 use sauron::{
-    class, document,
-    html::{text, units::px},
-    input, jss, main, node, on_click, on_readystatechange, r#type, value, wasm_bindgen,
-    wasm_bindgen_futures,
-    web_sys::console::{info, info_0, info_1},
-    window, Application, Closure, Cmd, Element, JsCast, JsValue, Node, Program,
+    article, main, wasm_bindgen, wasm_bindgen_futures, window, Application, Cmd, JsValue, Node,
+    Program,
 };
-use sauron_html_parser::raw_html;
+use sauron_html_parser::parse_html;
 
 enum Msg {
     GetArticles,
@@ -23,23 +19,21 @@ struct App {
 }
 
 async fn get_articles() -> Vec<String> {
-    let mut plugins = Plugins::default();
-    let adapter = SyntectAdapter::new(None);
-    plugins.render.codefence_syntax_highlighter = Some(&adapter);
-
     let client = Client::new();
 
     let mut articles: Vec<String> = [].to_vec();
 
     for url in ["/one_of.md"] {
         let origin = window().origin();
+        let ticks = chrono::Local::now().timestamp();
         let res = client
-            .get(format!("{}{}", origin, url))
+            .get(format!("{}{}?v={}", origin, url, ticks))
             .send()
             .await
             .unwrap();
         if let Some(text) = res.text().await.ok() {
-            let html = markdown_to_html_with_plugins(&text, &Options::default(), &plugins);
+            let html =
+                markdown_to_html_with_plugins(&text, &Options::default(), &Plugins::default());
             articles.push(html);
         }
     }
@@ -61,7 +55,17 @@ impl Application for App {
     }
 
     fn view(&self) -> Node<Msg> {
-        main([], self.articles.iter().map(|x| raw_html(x)))
+        main(
+            [],
+            self.articles.iter().map(|x| {
+                article(
+                    [],
+                    [parse_html::<Msg>(x)
+                        .expect("should have no parsing error")
+                        .expect("should have at least one node")],
+                )
+            }),
+        )
     }
 
     fn update(&mut self, msg: Msg) -> Cmd<Msg> {
